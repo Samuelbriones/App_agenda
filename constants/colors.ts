@@ -1,0 +1,33 @@
+export const Colors = {
+  background: '#0f0f0f',
+  surface: '#1a1a1a',
+  surfaceLight: '#2a2a2a',
+  text: '#ffffff',
+  textSecondary: '#a0a0a0',
+  textMuted: '#666666',
+  primary: '#e50914',
+  primaryDark: '#b20710',
+  border: '#333333',
+  status: {
+    Pendiente: '#f5c518',
+    Viendo: '#00d4aa',
+    Finalizado: '#2e7d32',
+    Abandonado: '#e53935',
+  },
+  priority: {
+    Alta: '#e53935',
+    Media: '#f5c518',
+    Baja: '#757575',
+  },
+  platform: {
+    Netflix: '#e50914',
+    'Prime Video': '#00a8e1',
+    'Disney+': '#113ccf',
+    'HBO Max': '#9900ff',
+    'Apple TV': '#000000',
+    'Paramount+': '#0064ff',
+    Hulu: '#1ce783',
+    Crunchyroll: '#f47521',
+    Otra: '#757575',
+  },
+};
