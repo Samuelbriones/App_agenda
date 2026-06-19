@@ -5,8 +5,8 @@ export const Colors = {
   text: '#ffffff',
   textSecondary: '#a0a0a0',
   textMuted: '#666666',
-  primary: '#e50914',
-  primaryDark: '#b20710',
+  primary: '#0a84ff',
+  primaryDark: '#0055cc',
   border: '#333333',
   status: {
     Pendiente: '#f5c518',

@@ -9,7 +9,7 @@ import {
   RefreshControl,
   Dimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Search, Filter, ChevronDown, X } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { MediaItem, Filters, MediaType, MediaStatus, Priority } from '@/types';
@@ -55,16 +55,20 @@ export default function HomeScreen() {
     }
 
     const { data, error } = await query.order('updated_at', { ascending: false });
-    if (!error && data) {
+    if (error) {
+      console.error('Error fetching items:', error);
+    } else if (data) {
       setItems(data as unknown as MediaItem[]);
     }
     setLoading(false);
     setRefreshing(false);
   }, [filters]);
 
-  useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchItems();
+    }, [fetchItems])
+  );
 
   useEffect(() => {
     const subscription = supabase

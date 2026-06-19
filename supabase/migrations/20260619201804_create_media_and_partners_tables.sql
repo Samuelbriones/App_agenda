@@ -35,6 +35,13 @@
 - Policies for profiles: users can read all profiles, update only their own.
 */
 
+CREATE TABLE IF NOT EXISTS profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email text,
+  display_name text,
+  created_at timestamptz DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS media_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tipo text NOT NULL CHECK (tipo IN ('Serie', 'Pelicula', 'Anime')),
@@ -45,8 +52,6 @@ CREATE TABLE IF NOT EXISTS media_items (
   progreso text,
   prioridad text CHECK (prioridad IN ('Alta', 'Media', 'Baja')),
   calificacion integer CHECK (calificacion >= 1 AND calificacion <= 10),
-  fecha_inicio date,
-  fecha_fin date,
   created_by uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -55,16 +60,9 @@ CREATE TABLE IF NOT EXISTS media_items (
 CREATE TABLE IF NOT EXISTS media_partners (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   media_id uuid NOT NULL REFERENCES media_items(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   created_at timestamptz DEFAULT now(),
   UNIQUE(media_id, user_id)
-);
-
-CREATE TABLE IF NOT EXISTS profiles (
-  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email text,
-  display_name text,
-  created_at timestamptz DEFAULT now()
 );
 
 ALTER TABLE media_items ENABLE ROW LEVEL SECURITY;

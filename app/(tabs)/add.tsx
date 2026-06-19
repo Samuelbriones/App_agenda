@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronDown, Calendar } from 'lucide-react-native';
+import { ChevronDown } from 'lucide-react-native';
 import { createMediaItem } from '@/lib/media';
 import { MediaType, MediaStatus, Priority } from '@/types';
 import { Colors } from '@/constants/colors';
@@ -31,8 +31,6 @@ export default function AddScreen() {
   const [episodio, setEpisodio] = useState('');
   const [prioridad, setPrioridad] = useState<Priority>('Media');
   const [calificacion, setCalificacion] = useState('');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -66,8 +64,6 @@ export default function AddScreen() {
         progreso: getProgreso(),
         prioridad,
         calificacion: calificacion.trim() ? parseInt(calificacion.trim(), 10) : null,
-        fecha_inicio: fechaInicio.trim() || null,
-        fecha_fin: fechaFin.trim() || null,
       });
       router.replace('/(tabs)');
     } catch (err: any) {
@@ -228,28 +224,6 @@ export default function AddScreen() {
           </View>
         )}
 
-        <View style={styles.row}>
-          <View style={[styles.field, styles.halfField]}>
-            <Text style={styles.label}>Fecha inicio</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={Colors.textMuted}
-              value={fechaInicio}
-              onChangeText={setFechaInicio}
-            />
-          </View>
-          <View style={[styles.field, styles.halfField]}>
-            <Text style={styles.label}>Fecha fin</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={Colors.textMuted}
-              value={fechaFin}
-              onChangeText={setFechaFin}
-            />
-          </View>
-        </View>
 
         <TouchableOpacity
           style={[styles.saveButton, loading && styles.saveButtonDisabled]}

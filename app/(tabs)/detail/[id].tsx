@@ -17,7 +17,6 @@ import {
   Tv,
   Play,
   Star,
-  Calendar,
   Users,
   Plus,
   X,
@@ -68,7 +67,7 @@ export default function DetailScreen() {
   }, [id, fetchItem]);
 
   async function handleDelete() {
-    Alert.alert('Eliminar', `Eliminar "${item?.titulo}"?`, [
+    Alert.alert('Eliminar', `¿Eliminar "${item?.titulo}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
@@ -84,6 +83,8 @@ export default function DetailScreen() {
       },
     ]);
   }
+
+
 
   async function handleSearchUsers() {
     if (!searchEmail.trim()) return;
@@ -195,20 +196,7 @@ export default function DetailScreen() {
               icon={<Star size={14} color="#f5c518" fill="#f5c518" />}
             />
           )}
-          {item.fecha_inicio && (
-            <InfoItem
-              label="Inicio"
-              value={item.fecha_inicio}
-              icon={<Calendar size={14} color={Colors.textSecondary} />}
-            />
-          )}
-          {item.fecha_fin && (
-            <InfoItem
-              label="Fin"
-              value={item.fecha_fin}
-              icon={<Calendar size={14} color={Colors.textSecondary} />}
-            />
-          )}
+
         </View>
       </View>
 

@@ -36,8 +36,6 @@ export default function EditScreen() {
   const [episodio, setEpisodio] = useState('');
   const [prioridad, setPrioridad] = useState<Priority>('Media');
   const [calificacion, setCalificacion] = useState('');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
 
   const fetchItem = useCallback(async () => {
     try {
@@ -50,8 +48,6 @@ export default function EditScreen() {
       setEstado(data.estado);
       setPrioridad(data.prioridad || 'Media');
       setCalificacion(data.calificacion?.toString() || '');
-      setFechaInicio(data.fecha_inicio || '');
-      setFechaFin(data.fecha_fin || '');
       if (data.progreso && data.progreso.startsWith('T')) {
         const match = data.progreso.match(/T(\d+)(?:\s*E(\d+))?/);
         if (match) {
@@ -115,8 +111,6 @@ export default function EditScreen() {
         progreso: getProgreso(),
         prioridad,
         calificacion: calificacion.trim() ? parseInt(calificacion.trim(), 10) : null,
-        fecha_inicio: fechaInicio.trim() || null,
-        fecha_fin: fechaFin.trim() || null,
       });
       router.back();
     } catch (err: any) {
@@ -285,28 +279,6 @@ export default function EditScreen() {
           </View>
         )}
 
-        <View style={styles.row}>
-          <View style={[styles.field, styles.halfField]}>
-            <Text style={styles.label}>Fecha inicio</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={Colors.textMuted}
-              value={fechaInicio}
-              onChangeText={setFechaInicio}
-            />
-          </View>
-          <View style={[styles.field, styles.halfField]}>
-            <Text style={styles.label}>Fecha fin</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={Colors.textMuted}
-              value={fechaFin}
-              onChangeText={setFechaFin}
-            />
-          </View>
-        </View>
 
         <TouchableOpacity
           style={[styles.saveButton, saving && styles.saveButtonDisabled]}

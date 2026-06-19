@@ -7,7 +7,7 @@ function TabIcon({ Icon, focused, label }: { Icon: any; focused: boolean; label:
   return (
     <View style={styles.tabItem}>
       <Icon size={22} color={focused ? Colors.primary : Colors.textMuted} strokeWidth={2} />
-      <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
+      <Text numberOfLines={1} style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
     </View>
   );
 }
@@ -39,6 +39,18 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => <TabIcon Icon={User} focused={focused} label="Perfil" />,
         }}
       />
+      <Tabs.Screen
+        name="detail/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="edit/[id]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
@@ -56,10 +68,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    minWidth: 80,
   },
   tabLabel: {
     fontSize: 11,
     color: Colors.textMuted,
+    textAlign: 'center',
   },
   tabLabelActive: {
     color: Colors.primary,

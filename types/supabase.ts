@@ -14,8 +14,6 @@ export interface Database {
           progreso: string | null;
           prioridad: 'Alta' | 'Media' | 'Baja' | null;
           calificacion: number | null;
-          fecha_inicio: string | null;
-          fecha_fin: string | null;
           created_by: string;
           created_at: string;
           updated_at: string;
@@ -30,8 +28,6 @@ export interface Database {
           progreso?: string | null;
           prioridad?: 'Alta' | 'Media' | 'Baja' | null;
           calificacion?: number | null;
-          fecha_inicio?: string | null;
-          fecha_fin?: string | null;
           created_by?: string;
           created_at?: string;
           updated_at?: string;
@@ -46,8 +42,6 @@ export interface Database {
           progreso?: string | null;
           prioridad?: 'Alta' | 'Media' | 'Baja' | null;
           calificacion?: number | null;
-          fecha_inicio?: string | null;
-          fecha_fin?: string | null;
           created_by?: string;
           created_at?: string;
           updated_at?: string;
