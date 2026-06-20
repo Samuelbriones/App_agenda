@@ -57,7 +57,7 @@ export async function deleteMediaItem(id: string) {
 export async function getMediaItem(id: string) {
   const { data, error } = await supabase
     .from('media_items')
-    .select('*, media_partners(user_id, profiles(display_name, email))')
+    .select('*, partners:media_partners(user_id, profiles(display_name, email))')
     .eq('id', id)
     .single();
   if (error) throw error;

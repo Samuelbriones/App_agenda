@@ -27,6 +27,7 @@ import { supabase } from '@/lib/supabase';
 import { MediaItem, Profile } from '@/types';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
+import { formatTipo, formatGenre } from '@/constants/data';
 
 export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -86,17 +87,55 @@ export default function DetailScreen() {
 
 
 
-  async function handleSearchUsers() {
-    if (!searchEmail.trim()) return;
+  async function handleSearchAndAddPartner() {
+    const emailToSearch = searchEmail.trim().toLowerCase();
+    if (!emailToSearch) return;
     setSearching(true);
     try {
-      const results = await searchUsersByEmail(searchEmail.trim());
-      const filtered = (results as Profile[]).filter(
-        (u) => u.id !== user?.id && !item?.partners?.some((p) => p.user_id === u.id)
+      const results = await searchUsersByEmail(emailToSearch);
+      // Intentar encontrar una coincidencia exacta de correo electrónico
+      const exactMatch = (results as Profile[]).find(
+        (u) => u.email.toLowerCase() === emailToSearch
       );
-      setSearchResults(filtered);
-    } catch {
-      Alert.alert('Error', 'No se pudieron buscar usuarios');
+
+      if (exactMatch) {
+        // Verificar si ya está compartido con este usuario
+        const isAlreadyShared = item?.partners?.some((p) => p.user_id === exactMatch.id);
+        if (isAlreadyShared) {
+          Alert.alert('Aviso', 'Este contenido ya se está compartiendo con este usuario.');
+          setSearchEmail('');
+          setSearchResults([]);
+          setSearching(false);
+          return;
+        }
+        if (exactMatch.id === user?.id) {
+          Alert.alert('Aviso', 'No puedes compartir el contenido contigo mismo.');
+          setSearchEmail('');
+          setSearchResults([]);
+          setSearching(false);
+          return;
+        }
+        // Compartir directamente
+        await addPartner(id, exactMatch.id);
+        setSearchEmail('');
+        setSearchResults([]);
+        fetchItem();
+        Alert.alert('¡Compartido!', 'El contenido ahora se está compartiendo.');
+      } else {
+        // Si no hay coincidencia exacta, mostrar resultados de coincidencia parcial
+        const filtered = (results as Profile[]).filter(
+          (u) => u.id !== user?.id && !item?.partners?.some((p) => p.user_id === u.id)
+        );
+        if (filtered.length === 0) {
+          Alert.alert('Usuario no encontrado', 'No se encontró ningún usuario registrado con ese correo.');
+          setSearchResults([]);
+        } else {
+          setSearchResults(filtered);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error sharing:', error);
+      Alert.alert('Error', `No se pudo compartir con este usuario. Detalles: ${error.message || JSON.stringify(error)}`);
     } finally {
       setSearching(false);
     }
@@ -108,8 +147,10 @@ export default function DetailScreen() {
       setSearchResults([]);
       setSearchEmail('');
       fetchItem();
-    } catch {
-      Alert.alert('Error', 'No se pudo agregar el usuario');
+      Alert.alert('¡Compartido!', 'El contenido ahora se está compartiendo.');
+    } catch (error: any) {
+      console.error('Error adding partner:', error);
+      Alert.alert('Error', `No se pudo agregar el usuario. Detalles: ${error.message || JSON.stringify(error)}`);
     }
   }
 
@@ -117,8 +158,10 @@ export default function DetailScreen() {
     try {
       await removePartner(id, userId);
       fetchItem();
-    } catch {
-      Alert.alert('Error', 'No se pudo eliminar el usuario');
+      Alert.alert('¡Dejado de compartir!', 'Se dejó de compartir el contenido.');
+    } catch (error: any) {
+      console.error('Error removing partner:', error);
+      Alert.alert('Error', `No se pudo eliminar el usuario. Detalles: ${error.message || JSON.stringify(error)}`);
     }
   }
 
@@ -163,7 +206,7 @@ export default function DetailScreen() {
       <View style={styles.hero}>
         <View style={[styles.typeBadge, { backgroundColor: statusColor + '22' }]}>
           <TypeIcon size={20} color={statusColor} />
-          <Text style={[styles.typeText, { color: statusColor }]}>{item.tipo}</Text>
+          <Text style={[styles.typeText, { color: statusColor }]}>{formatTipo(item.tipo)}</Text>
         </View>
         <Text style={styles.title}>{item.titulo}</Text>
         <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
@@ -177,7 +220,7 @@ export default function DetailScreen() {
             <InfoItem label="Plataforma" value={item.plataforma} />
           )}
           {item.genero && (
-            <InfoItem label="Genero" value={item.genero} />
+            <InfoItem label="Género" value={formatGenre(item.genero)} />
           )}
           {item.prioridad && (
             <InfoItem
@@ -191,7 +234,7 @@ export default function DetailScreen() {
           )}
           {item.calificacion && (
             <InfoItem
-              label="Calificacion"
+              label="Calificación"
               value={`${item.calificacion}/10`}
               icon={<Star size={14} color="#f5c518" fill="#f5c518" />}
             />
@@ -224,7 +267,7 @@ export default function DetailScreen() {
                 autoCapitalize="none"
                 keyboardType="email-address"
               />
-              <TouchableOpacity style={styles.searchButton} onPress={handleSearchUsers} disabled={searching}>
+              <TouchableOpacity style={styles.searchButton} onPress={handleSearchAndAddPartner} disabled={searching}>
                 {searching ? <ActivityIndicator size="small" color="#fff" /> : <Plus size={18} color="#fff" />}
               </TouchableOpacity>
             </View>
@@ -236,6 +279,12 @@ export default function DetailScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        )}
+
+        {item.partners && item.partners.length > 0 && (
+          <Text style={styles.sharingStatusText}>
+            Se está compartiendo {item.tipo === 'Anime' ? 'este anime' : item.tipo === 'Pelicula' ? 'esta película' : 'esta serie'}
+          </Text>
         )}
 
         <View style={styles.partnersList}>
@@ -500,5 +549,11 @@ const styles = StyleSheet.create({
   noPartnersText: {
     color: Colors.textMuted,
     fontSize: 13,
+  },
+  sharingStatusText: {
+    color: Colors.primary,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
   },
 });

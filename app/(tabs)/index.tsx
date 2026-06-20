@@ -36,7 +36,7 @@ export default function HomeScreen() {
   const fetchItems = useCallback(async () => {
     let query = supabase
       .from('media_items')
-      .select('*, media_partners(user_id, profiles(display_name, email))');
+      .select('*, partners:media_partners(user_id, profiles(display_name, email))');
 
     if (filters.tipo !== 'Todos') {
       query = query.eq('tipo', filters.tipo);
@@ -115,7 +115,7 @@ export default function HomeScreen() {
           <Search size={18} color={Colors.textMuted} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar por titulo..."
+            placeholder="Buscar por título..."
             placeholderTextColor={Colors.textMuted}
             value={filters.search}
             onChangeText={(text) => setFilters((f) => ({ ...f, search: text }))}
@@ -198,6 +198,13 @@ export default function HomeScreen() {
   );
 }
 
+function formatFilterValue(val: string, label: string): string {
+  if (label === 'Tipo') {
+    if (val === 'Pelicula') return 'Película';
+  }
+  return val;
+}
+
 function FilterDropdown({
   label,
   value,
@@ -215,7 +222,7 @@ function FilterDropdown({
     <View style={styles.filterGroup}>
       <Text style={styles.filterLabel}>{label}</Text>
       <TouchableOpacity style={styles.dropdownTrigger} onPress={() => setOpen(!open)}>
-        <Text style={styles.dropdownValue}>{value}</Text>
+        <Text style={styles.dropdownValue}>{formatFilterValue(value, label)}</Text>
         <ChevronDown size={16} color={Colors.textMuted} />
       </TouchableOpacity>
       {open && (
@@ -230,7 +237,7 @@ function FilterDropdown({
               }}
             >
               <Text style={[styles.dropdownItemText, value === opt && styles.dropdownItemTextActive]}>
-                {opt}
+                {formatFilterValue(opt, label)}
               </Text>
             </TouchableOpacity>
           ))}

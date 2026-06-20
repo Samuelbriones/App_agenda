@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MediaItem } from '@/types';
 import { Colors } from '@/constants/colors';
 import { Play, Film, Tv, Star, Users } from 'lucide-react-native';
+import { formatTipo, formatGenre } from '@/constants/data';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -33,7 +34,7 @@ export default function MediaCard({ item, onPress }: MediaCardProps) {
       <View style={styles.cardHeader}>
         <View style={[styles.typeBadge, { backgroundColor: statusColor + '22' }]}>
           <TypeIcon size={14} color={statusColor} />
-          <Text style={[styles.typeText, { color: statusColor }]}>{item.tipo}</Text>
+          <Text style={[styles.typeText, { color: statusColor }]}>{formatTipo(item.tipo)}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
           <Text style={styles.statusText}>{item.estado}</Text>
@@ -47,7 +48,7 @@ export default function MediaCard({ item, onPress }: MediaCardProps) {
           <Text style={styles.platform}>{item.plataforma}</Text>
         )}
         {item.genero && (
-          <Text style={styles.genre}>{item.genero}</Text>
+          <Text style={styles.genre}>{formatGenre(item.genero)}</Text>
         )}
       </View>
 

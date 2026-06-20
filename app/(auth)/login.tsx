@@ -32,7 +32,7 @@ export default function LoginScreen() {
       await signIn(email.trim(), password.trim());
       router.replace('/(tabs)');
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesion');
+      setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
@@ -46,14 +46,14 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>MediaTracker</Text>
-          <Text style={styles.subtitle}>Tu tracker compartido de series y peliculas</Text>
+          <Text style={styles.subtitle}>Tu tracker compartido de series y películas</Text>
         </View>
 
         <View style={styles.form}>
           {error && <Text style={styles.errorText}>{error}</Text>}
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Correo electronico</Text>
+            <Text style={styles.label}>Correo electrónico</Text>
             <TextInput
               style={styles.input}
               placeholder="tu@email.com"
@@ -67,10 +67,10 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Contrasena</Text>
+            <Text style={styles.label}>Contraseña</Text>
             <TextInput
               style={styles.input}
-              placeholder="Tu contrasena"
+              placeholder="Tu contraseña"
               placeholderTextColor={Colors.textMuted}
               value={password}
               onChangeText={setPassword}
@@ -87,15 +87,15 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Iniciar sesion</Text>
+              <Text style={styles.buttonText}>Iniciar sesión</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>No tienes cuenta?</Text>
+            <Text style={styles.footerText}>¿No tienes cuenta?</Text>
             <Link href="/(auth)/register" asChild>
               <TouchableOpacity>
-                <Text style={styles.footerLink}>Registrate</Text>
+                <Text style={styles.footerLink}>Regístrate</Text>
               </TouchableOpacity>
             </Link>
           </View>

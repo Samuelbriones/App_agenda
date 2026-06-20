@@ -16,7 +16,7 @@ import { getMediaItem, updateMediaItem } from '@/lib/media';
 import { supabase } from '@/lib/supabase';
 import { MediaItem, MediaType, MediaStatus, Priority } from '@/types';
 import { Colors } from '@/constants/colors';
-import { MEDIA_TYPES, MEDIA_STATUSES, PRIORITIES, PLATFORMS, GENRES } from '@/constants/data';
+import { MEDIA_TYPES, MEDIA_STATUSES, PRIORITIES, PLATFORMS, GENRES, formatTipo } from '@/constants/data';
 
 export default function EditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -96,7 +96,7 @@ export default function EditScreen() {
 
   async function handleSave() {
     if (!titulo.trim()) {
-      setError('El titulo es obligatorio');
+      setError('El título es obligatorio');
       return;
     }
     setSaving(true);
@@ -120,6 +120,11 @@ export default function EditScreen() {
     }
   }
 
+  function formatDropdownValue(val: string, dropdownId: string): string {
+    if (dropdownId === 'tipo') return formatTipo(val);
+    return val;
+  }
+
   function Dropdown<T extends string>({
     label,
     value,
@@ -141,11 +146,15 @@ export default function EditScreen() {
           style={styles.dropdownTrigger}
           onPress={() => setOpenDropdown(open ? null : id)}
         >
-          <Text style={styles.dropdownValue}>{value}</Text>
+          <Text style={styles.dropdownValue}>{formatDropdownValue(value, id)}</Text>
           <ChevronDown size={16} color={Colors.textMuted} />
         </TouchableOpacity>
         {open && (
-          <View style={styles.dropdownMenu}>
+          <ScrollView
+            style={styles.dropdownMenu}
+            nestedScrollEnabled={true}
+            keyboardShouldPersistTaps="handled"
+          >
             {options.map((opt) => (
               <TouchableOpacity
                 key={opt}
@@ -156,11 +165,11 @@ export default function EditScreen() {
                 }}
               >
                 <Text style={[styles.dropdownItemText, value === opt && styles.dropdownItemTextActive]}>
-                  {opt}
+                  {formatDropdownValue(opt, id)}
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         )}
       </View>
     );
@@ -195,7 +204,7 @@ export default function EditScreen() {
         />
 
         <View style={styles.field}>
-          <Text style={styles.label}>Titulo *</Text>
+          <Text style={styles.label}>Título *</Text>
           <TextInput
             style={styles.input}
             placeholder="Nombre del contenido"
@@ -207,7 +216,7 @@ export default function EditScreen() {
 
         <Dropdown
           id="genero"
-          label="Genero"
+          label="Género"
           value={genero || 'Seleccionar...'}
           options={['Seleccionar...', ...GENRES]}
           onSelect={(v) => setGenero(v === 'Seleccionar...' ? '' : v)}
@@ -266,7 +275,7 @@ export default function EditScreen() {
 
         {isFinished && (
           <View style={styles.field}>
-            <Text style={styles.label}>Calificacion (1-10)</Text>
+            <Text style={styles.label}>Calificación (1-10)</Text>
             <TextInput
               style={styles.input}
               placeholder="Del 1 al 10"
