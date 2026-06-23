@@ -37,6 +37,10 @@ export default function EditScreen() {
   const [prioridad, setPrioridad] = useState<Priority>('Media');
   const [calificacion, setCalificacion] = useState('');
 
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [description, setDescription] = useState<string | null>(null);
+  const [tmdbId, setTmdbId] = useState<string | null>(null);
+
   const fetchItem = useCallback(async () => {
     try {
       const data = await getMediaItem(id);
@@ -48,6 +52,9 @@ export default function EditScreen() {
       setEstado(data.estado);
       setPrioridad(data.prioridad || 'Media');
       setCalificacion(data.calificacion?.toString() || '');
+      setImageUrl(data.image_url || null);
+      setDescription(data.description || null);
+      setTmdbId(data.tmdb_id || null);
       if (data.progreso && data.progreso.startsWith('T')) {
         const match = data.progreso.match(/T(\d+)(?:\s*E(\d+))?/);
         if (match) {
@@ -111,6 +118,9 @@ export default function EditScreen() {
         progreso: getProgreso(),
         prioridad,
         calificacion: calificacion.trim() ? parseInt(calificacion.trim(), 10) : null,
+        image_url: imageUrl,
+        description: description,
+        tmdb_id: tmdbId,
       });
       router.back();
     } catch (err: any) {

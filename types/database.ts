@@ -15,6 +15,9 @@ export interface Database {
           created_by: string;
           created_at: string;
           updated_at: string;
+          image_url: string | null;
+          description: string | null;
+          tmdb_id: string | null;
         };
         Insert: {
           id?: string;
@@ -29,6 +32,9 @@ export interface Database {
           created_by?: string;
           created_at?: string;
           updated_at?: string;
+          image_url?: string | null;
+          description?: string | null;
+          tmdb_id?: string | null;
         };
         Update: {
           id?: string;
@@ -43,7 +49,11 @@ export interface Database {
           created_by?: string;
           created_at?: string;
           updated_at?: string;
+          image_url?: string | null;
+          description?: string | null;
+          tmdb_id?: string | null;
         };
+        Relationships: [];
       };
       media_partners: {
         Row: {
@@ -64,6 +74,7 @@ export interface Database {
           user_id?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -87,7 +98,65 @@ export interface Database {
           avatar_url?: string | null;
           created_at?: string;
         };
+        Relationships: [];
+      };
+      user_relationships: {
+        Row: {
+          id: string;
+          sender_id: string;
+          receiver_id: string;
+          status: 'pending' | 'accepted' | 'rejected';
+          relationship_type: 'friend' | 'partner';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          sender_id: string;
+          receiver_id: string;
+          status: 'pending' | 'accepted' | 'rejected';
+          relationship_type: 'friend' | 'partner';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          sender_id?: string;
+          receiver_id?: string;
+          status?: 'pending' | 'accepted' | 'rejected';
+          relationship_type?: 'friend' | 'partner';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      movie_swipes: {
+        Row: {
+          id: string;
+          user_id: string;
+          media_id: string;
+          vote: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          media_id: string;
+          vote: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          media_id?: string;
+          vote?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
       };
     };
+    Views: {};
+    Functions: {};
+    Enums: {};
   };
 }

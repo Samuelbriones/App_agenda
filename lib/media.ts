@@ -10,6 +10,9 @@ export async function createMediaItem(item: {
   progreso: string;
   prioridad: Priority;
   calificacion: number | null;
+  image_url?: string | null;
+  description?: string | null;
+  tmdb_id?: string | null;
 }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Usuario no autenticado');
@@ -37,6 +40,9 @@ export async function updateMediaItem(
     progreso: string;
     prioridad: Priority;
     calificacion: number | null;
+    image_url: string | null;
+    description: string | null;
+    tmdb_id: string | null;
   }>
 ) {
   const { data, error } = await supabase

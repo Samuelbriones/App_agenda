@@ -33,6 +33,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => <TabIcon Icon={Plus} focused={focused} label="Agregar" />,
         }}
       />
+
       <Tabs.Screen
         name="profile"
         options={{

@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { MediaItem } from '@/types';
 import { Colors } from '@/constants/colors';
-import { Play, Film, Tv, Star, Users } from 'lucide-react-native';
+import { Play, Film, Tv, Star, Users, Film as FilmPlaceholder } from 'lucide-react-native';
 import { formatTipo, formatGenre } from '@/constants/data';
 
 interface MediaCardProps {
@@ -31,52 +31,82 @@ export default function MediaCard({ item, onPress }: MediaCardProps) {
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <View style={styles.cardHeader}>
-        <View style={[styles.typeBadge, { backgroundColor: statusColor + '22' }]}>
-          <TypeIcon size={14} color={statusColor} />
-          <Text style={[styles.typeText, { color: statusColor }]}>{formatTipo(item.tipo)}</Text>
-        </View>
-        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={styles.statusText}>{item.estado}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.title} numberOfLines={2}>{item.titulo}</Text>
-
-      <View style={styles.metaRow}>
-        {item.plataforma && (
-          <Text style={styles.platform}>{item.plataforma}</Text>
-        )}
-        {item.genero && (
-          <Text style={styles.genre}>{formatGenre(item.genero)}</Text>
-        )}
-      </View>
-
-      <View style={styles.footer}>
-        <View style={styles.footerLeft}>
-          {item.prioridad && (
-            <View style={styles.priorityDot}>
-              <View style={[styles.dot, { backgroundColor: priorityColor }]} />
-              <Text style={styles.priorityText}>{item.prioridad}</Text>
+      <View style={styles.cardLayout}>
+        {/* Póster a la izquierda */}
+        <View style={styles.posterContainer}>
+          {item.image_url ? (
+            <Image source={{ uri: item.image_url }} style={styles.posterImage} />
+          ) : (
+            <View style={styles.posterPlaceholder}>
+              <FilmPlaceholder size={24} color={Colors.textMuted} />
+              <Text style={styles.placeholderText}>{formatTipo(item.tipo)}</Text>
             </View>
           )}
-          {item.progreso && (
-            <Text style={styles.progress}>{item.progreso}</Text>
-          )}
         </View>
-        <View style={styles.footerRight}>
-          {item.calificacion && (
-            <View style={styles.rating}>
-              <Star size={14} color="#f5c518" fill="#f5c518" />
-              <Text style={styles.ratingText}>{item.calificacion}</Text>
+
+        {/* Detalles a la derecha */}
+        <View style={styles.detailsContainer}>
+          {/* Header */}
+          <View style={styles.cardHeader}>
+            <View style={[styles.typeBadge, { backgroundColor: statusColor + '15' }]}>
+              <TypeIcon size={12} color={statusColor} />
+              <Text style={[styles.typeText, { color: statusColor }]}>{formatTipo(item.tipo)}</Text>
             </View>
-          )}
-          {item.partners && item.partners.length > 0 && (
-            <View style={styles.partners}>
-              <Users size={14} color={Colors.textMuted} />
-              <Text style={styles.partnersText}>{item.partners.length + 1}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+              <Text style={styles.statusText}>{item.estado}</Text>
             </View>
-          )}
+          </View>
+
+          {/* Título */}
+          <Text style={styles.title} numberOfLines={2}>
+            {item.titulo}
+          </Text>
+
+          {/* Metadata */}
+          <View style={styles.metaRow}>
+            {item.plataforma ? (
+              <Text style={styles.platform} numberOfLines={1}>
+                {item.plataforma}
+              </Text>
+            ) : null}
+            {item.genero ? (
+              <Text style={styles.genre} numberOfLines={1}>
+                {formatGenre(item.genero)}
+              </Text>
+            ) : null}
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <View style={styles.footerLeft}>
+              {item.prioridad && (
+                <View style={styles.priorityDot}>
+                  <View style={[styles.dot, { backgroundColor: priorityColor }]} />
+                  <Text style={styles.priorityText}>{item.prioridad}</Text>
+                </View>
+              )}
+              {item.progreso ? (
+                <Text style={styles.progress} numberOfLines={1}>
+                  {item.progreso}
+                </Text>
+              ) : null}
+            </View>
+            
+            <View style={styles.footerRight}>
+              {item.calificacion && (
+                <View style={styles.rating}>
+                  <Star size={12} color="#f5c518" fill="#f5c518" />
+                  <Text style={styles.ratingText}>{item.calificacion}</Text>
+                </View>
+              )}
+              {item.partners && item.partners.length > 0 && (
+                <View style={styles.partners}>
+                  <Users size={12} color={Colors.textMuted} />
+                  <Text style={styles.partnersText}>{item.partners.length + 1}</Text>
+                </View>
+              )}
+            </View>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -86,66 +116,104 @@ export default function MediaCard({ item, onPress }: MediaCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  cardLayout: {
+    flexDirection: 'row',
+  },
+  posterContainer: {
+    width: 80,
+    height: 120,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: Colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  posterImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  posterPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 4,
+  },
+  placeholderText: {
+    color: Colors.textMuted,
+    fontSize: 9,
+    marginTop: 4,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  detailsContainer: {
+    flex: 1,
+    marginLeft: 14,
+    justifyContent: 'space-between',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 6,
   },
   typeText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 6,
   },
   statusText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   title: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 8,
+    marginBottom: 6,
+    lineHeight: 20,
   },
   metaRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 8,
   },
   platform: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textSecondary,
     backgroundColor: Colors.surfaceLight,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 4,
+    maxWidth: 100,
   },
   genre: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textSecondary,
     backgroundColor: Colors.surfaceLight,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 4,
+    flex: 1,
   },
   footer: {
     flexDirection: 'row',
@@ -155,48 +223,49 @@ const styles = StyleSheet.create({
   footerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   priorityDot: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   priorityText: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textSecondary,
   },
   progress: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textSecondary,
+    maxWidth: 80,
   },
   footerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   rating: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   ratingText: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#f5c518',
     fontWeight: '600',
   },
   partners: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   partnersText: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
   },
 });

@@ -7,8 +7,10 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
+  Platform,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import {
   ArrowLeft,
   Edit3,
@@ -20,14 +22,18 @@ import {
   Users,
   Plus,
   X,
+  Heart,
+  UserCheck,
+  Check,
 } from 'lucide-react-native';
 import { TextInput } from 'react-native';
 import { getMediaItem, deleteMediaItem, addPartner, removePartner, searchUsersByEmail } from '@/lib/media';
 import { supabase } from '@/lib/supabase';
-import { MediaItem, Profile } from '@/types';
+import { MediaItem, Profile, UserRelationship } from '@/types';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
 import { formatTipo, formatGenre } from '@/constants/data';
+import { getRelationships } from '@/lib/relationships';
 
 export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,6 +45,16 @@ export default function DetailScreen() {
   const [searchEmail, setSearchEmail] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [searching, setSearching] = useState(false);
+  const [connections, setConnections] = useState<UserRelationship[]>([]);
+
+  const fetchConnections = useCallback(async () => {
+    try {
+      const data = await getRelationships();
+      setConnections(data);
+    } catch (error) {
+      console.error('Error fetching connections:', error);
+    }
+  }, []);
 
   const fetchItem = useCallback(async () => {
     try {
@@ -51,9 +67,12 @@ export default function DetailScreen() {
     }
   }, [id]);
 
-  useEffect(() => {
-    fetchItem();
-  }, [fetchItem]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchItem();
+      fetchConnections();
+    }, [fetchItem, fetchConnections])
+  );
 
   useEffect(() => {
     const subscription = supabase
@@ -203,16 +222,36 @@ export default function DetailScreen() {
         </View>
       </View>
 
-      <View style={styles.hero}>
-        <View style={[styles.typeBadge, { backgroundColor: statusColor + '22' }]}>
-          <TypeIcon size={20} color={statusColor} />
-          <Text style={[styles.typeText, { color: statusColor }]}>{formatTipo(item.tipo)}</Text>
+      {item.image_url ? (
+        <View style={styles.premiumHeader}>
+          <Image source={{ uri: item.image_url }} style={styles.backdropImage} blurRadius={Platform.OS === 'ios' ? 10 : 5} />
+          <View style={styles.backdropOverlay} />
+          <View style={styles.premiumHeaderContent}>
+            <Image source={{ uri: item.image_url }} style={styles.premiumPoster} />
+            <View style={styles.premiumHeaderTextInfo}>
+              <View style={[styles.typeBadge, { backgroundColor: statusColor + '22', alignSelf: 'flex-start' }]}>
+                <TypeIcon size={14} color={statusColor} />
+                <Text style={[styles.typeText, { color: statusColor, fontSize: 11 }]}>{formatTipo(item.tipo)}</Text>
+              </View>
+              <Text style={styles.premiumTitle} numberOfLines={3}>{item.titulo}</Text>
+              <View style={[styles.statusBadge, { backgroundColor: statusColor, alignSelf: 'flex-start', marginTop: 6 }]}>
+                <Text style={styles.statusText}>{item.estado}</Text>
+              </View>
+            </View>
+          </View>
         </View>
-        <Text style={styles.title}>{item.titulo}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={styles.statusText}>{item.estado}</Text>
+      ) : (
+        <View style={styles.hero}>
+          <View style={[styles.typeBadge, { backgroundColor: statusColor + '22' }]}>
+            <TypeIcon size={20} color={statusColor} />
+            <Text style={[styles.typeText, { color: statusColor }]}>{formatTipo(item.tipo)}</Text>
+          </View>
+          <Text style={styles.title}>{item.titulo}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+            <Text style={styles.statusText}>{item.estado}</Text>
+          </View>
         </View>
-      </View>
+      )}
 
       <View style={styles.section}>
         <View style={styles.infoGrid}>
@@ -239,9 +278,15 @@ export default function DetailScreen() {
               icon={<Star size={14} color="#f5c518" fill="#f5c518" />}
             />
           )}
-
         </View>
       </View>
+
+      {item.description ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Sinopsis</Text>
+          <Text style={styles.descriptionText}>{item.description}</Text>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -253,6 +298,64 @@ export default function DetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Compartir Rápido con Amigos/Pareja */}
+        {connections.length > 0 && (
+          <View style={styles.quickShareContainer}>
+            <Text style={styles.quickShareTitle}>Compartir rápido</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickShareScroll}>
+              {connections.map((c) => {
+                const profile = c.profiles;
+                if (!profile) return null;
+                const isShared = item.partners?.some((p) => p.user_id === profile.id);
+                const isPartner = c.relationship_type === 'partner';
+                const name = profile.display_name || profile.email || 'Usuario';
+
+                return (
+                  <TouchableOpacity
+                    key={c.id}
+                    style={[
+                      styles.quickShareAvatarBtn,
+                      isShared && (isPartner ? styles.quickShareAvatarBtnActivePartner : styles.quickShareAvatarBtnActiveFriend),
+                    ]}
+                    onPress={() => {
+                      if (isShared) {
+                        handleRemovePartner(profile.id);
+                      } else {
+                        handleAddPartner(profile.id);
+                      }
+                    }}
+                  >
+                    <View style={styles.avatarWrapper}>
+                      {profile.avatar_url ? (
+                        <Image source={{ uri: profile.avatar_url }} style={styles.quickShareAvatar} />
+                      ) : (
+                        <View style={styles.quickShareAvatarPlaceholder}>
+                          <Text style={styles.quickShareAvatarText}>
+                            {name.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      {isShared && (
+                        <View style={[styles.avatarBadge, { backgroundColor: isPartner ? '#ff3366' : Colors.primary }]}>
+                          <Check size={8} color="#fff" />
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.quickShareName} numberOfLines={1}>
+                      {name.split(' ')[0]}
+                    </Text>
+                    {isPartner ? (
+                      <Heart size={10} color="#ff3366" fill={isShared ? "#ff3366" : "transparent"} style={{ marginTop: 2 }} />
+                    ) : (
+                      <Users size={10} color={Colors.textSecondary} style={{ marginTop: 2 }} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
 
         {showShare && (
           <View style={styles.sharePanel}>
@@ -555,5 +658,131 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 8,
+  },
+  quickShareContainer: {
+    marginBottom: 16,
+  },
+  quickShareTitle: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  quickShareScroll: {
+    gap: 12,
+    paddingRight: 16,
+  },
+  quickShareAvatarBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    minWidth: 70,
+  },
+  quickShareAvatarBtnActiveFriend: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary + '0a',
+  },
+  quickShareAvatarBtnActivePartner: {
+    borderColor: '#ff3366',
+    backgroundColor: '#ff33660a',
+  },
+  avatarWrapper: {
+    position: 'relative',
+    width: 44,
+    height: 44,
+  },
+  quickShareAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  quickShareAvatarPlaceholder: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  quickShareAvatarText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  avatarBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.surface,
+  },
+  quickShareName: {
+    fontSize: 11,
+    color: Colors.text,
+    marginTop: 4,
+    maxWidth: 64,
+    textAlign: 'center',
+  },
+  premiumHeader: {
+    height: 220,
+    position: 'relative',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 20,
+    backgroundColor: Colors.surface,
+  },
+  backdropImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    opacity: 0.35,
+  },
+  backdropOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  premiumHeaderContent: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 16,
+    left: 16,
+    right: 16,
+    alignItems: 'flex-end',
+  },
+  premiumPoster: {
+    width: 90,
+    height: 135,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#fff',
+  },
+  premiumHeaderTextInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  premiumTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
 });

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { LogOut, User, Mail, Film, Star, Heart, Share2, Award, Calendar, Settings, ChevronRight, Camera, Edit2, Check, X } from 'lucide-react-native';
+import { LogOut, User, Mail, Film, Star, Heart, Share2, Award, Calendar, Settings, ChevronRight, Camera, Edit2, Check, X, Users } from 'lucide-react-native';
 import { signOut } from '@/lib/auth';
 import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/colors';
@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
+import { getPendingRequests } from '@/lib/relationships';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function ProfileScreen() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
   const [savingName, setSavingName] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -35,6 +37,10 @@ export default function ProfileScreen() {
   const fetchStats = useCallback(async () => {
     if (!user) return;
     try {
+      // Obtener solicitudes pendientes
+      const pendingData = await getPendingRequests();
+      setPendingCount(pendingData.length);
+
       const { data, error } = await supabase
         .from('media_items')
         .select('tipo, estado, calificacion, genero, created_by, partners:media_partners(user_id)');
@@ -455,7 +461,18 @@ export default function ProfileScreen() {
 
       {/* Botones de acción */}
       <View style={styles.actionSection}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleLogout}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/connections')}>
+          <Users size={20} color={Colors.primary} />
+          <Text style={[styles.actionButtonText, { color: Colors.text }]}>Amigos y Pareja</Text>
+          {pendingCount > 0 && (
+            <View style={styles.pendingBadge}>
+              <Text style={styles.pendingBadgeText}>{pendingCount}</Text>
+            </View>
+          )}
+          <ChevronRight size={18} color={Colors.textMuted} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.actionButton, { marginTop: 12 }]} onPress={handleLogout}>
           <LogOut size={20} color={Colors.status.Abandonado} />
           <Text style={styles.actionButtonText}>Cerrar sesión</Text>
           <ChevronRight size={18} color={Colors.textMuted} />
@@ -779,5 +796,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  pendingBadge: {
+    backgroundColor: Colors.status.Abandonado,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  pendingBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+    paddingHorizontal: 5,
   },
 });
